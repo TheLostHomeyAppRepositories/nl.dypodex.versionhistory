@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "axios": "^1.18.1",
-    "homey-api": "^3.19.1",
-    "uuid": "^11.1.0"
+    "homey-api": "^3.19.2",
+    "uuid": "^11.1.1"
   }
 }

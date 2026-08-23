@@ -92,20 +92,23 @@
           });
         });
 
-        document.getElementById('saveSettingsBtn').addEventListener('click', function() {
+        document.getElementById('saveSettingsBtn').addEventListener('click', async function() {
           const val = parseInt(document.getElementById('maxRevisions').value, 10);
+          const btn = document.getElementById('saveSettingsBtn');
+          btn.classList.add('is-loading');
           if (isNaN(val) || val < 1 || val > 20) {
             Homey.alert('Please enter a number between 1 and 20.');
+            btn.classList.remove('is-loading');
             return;
           }
           if (maxRevisions > document.getElementById('maxRevisions').value) {
-            const response = Homey.confirm('When changing the maximum revisions to a lower value, all older revisions will be removed. Are you sure you want to continue?');
-            if (!response) return;
+            const response = await Homey.confirm('When changing the maximum revisions to a lower value, all older revisions will be removed. Are you sure you want to continue?');
+            if (!response) {
+              btn.classList.remove('is-loading');
+              return
+            };
             maxRevisions = document.getElementById('maxRevisions').value;
           }
-
-          const btn = document.getElementById('saveSettingsBtn');
-          btn.classList.add('is-loading');
 
           Homey.api('POST', '/setMaxRevisions', { max: val }, function(err) {
             btn.classList.remove('is-loading');

@@ -4,8 +4,8 @@ const Homey = require('homey');
 const { HomeyAPI } = require("homey-api");
 const fs = require('fs').promises;
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
 const axios = require('axios');
+const crypto = require('crypto');
 
 module.exports = class MyApp extends Homey.App {
 
@@ -32,10 +32,9 @@ module.exports = class MyApp extends Homey.App {
     this._api.flow.on('advancedflow.delete', async flow => await this.onFlowDelete(flow, true));
     this._cleanupInterval = this.homey.setInterval(() => this.cleanupTrash(), 60 * 60 * 1000);
     try {
-      const { randomUUID } = require('crypto');
       let id = this.homey.settings.get('id');
       if (!id) {
-        id = randomUUID();
+        id = crypto.randomUUID();
         this.homey.settings.set('id', id);
       }
       await axios.post('https://homey-apps-telemetry.vercel.app/api/installations', {
@@ -113,7 +112,7 @@ module.exports = class MyApp extends Homey.App {
         try { await fs.unlink(path.join('/userdata', rev.filename)); } catch (e) {}
       }
     } else {
-      filename = uuidv4() + '.json';
+      filename = crypto.randomUUID() + '.json';
       await fs.writeFile(path.join('/userdata', filename), JSON.stringify(this.formatFlow(flow, isAdvanced)), 'utf8');
     }
 
@@ -167,7 +166,7 @@ module.exports = class MyApp extends Homey.App {
     const existing = await this.homey.settings.get(key);
     if (existing !== null) return;
 
-    const filename = uuidv4() + '.json';
+    const filename = crypto.randomUUID() + '.json';
     await fs.writeFile(path.join('/userdata', filename), JSON.stringify(this.formatFlow(flow, isAdvanced)), 'utf8');
     await this.homey.settings.set(key, [{
       timestamp: new Date().toISOString(),
@@ -204,7 +203,7 @@ module.exports = class MyApp extends Homey.App {
     const revisions = (await this.homey.settings.get(key)) ?? [];
     const maxRevisions = this.homey.settings.get('max_revisions') ?? 5;
 
-    const filename = uuidv4() + '.json';
+    const filename = crypto.randomUUID() + '.json';
     await fs.writeFile(path.join('/userdata', filename), JSON.stringify(this.formatFlow(flow, isAdvanced)), 'utf8');
 
     revisions.unshift({
